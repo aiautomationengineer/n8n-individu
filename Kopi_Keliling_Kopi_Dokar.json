@@ -1,0 +1,283 @@
+{
+  "name": "Kopi Keliling Kalideres (Kopi Dokar)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "578b93b0-9311-4d16-a1a9-b2623abad11f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ogzvzbCwSOMnrhMUdEXsdrYoZZtjXtuHuK3-kS48yKE",
+          "mode": "list",
+          "cachedResultName": "Rekap_Penjualan_Kopi_Dokar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ogzvzbCwSOMnrhMUdEXsdrYoZZtjXtuHuK3-kS48yKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Agustus",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ogzvzbCwSOMnrhMUdEXsdrYoZZtjXtuHuK3-kS48yKE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "160485de-c822-4d4e-948d-4691fa025b5d",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XwOtRk7TX2Alk9L4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Kamu adalah Senior Data Analyst untuk bisnis kafe gerobak listrik 'Kopi Kalideres' yang memiliki 10 armada di Kalideres. \nBerikut adalah data transaksi penjualan selama seminggu terakhir:\n{{ $json.Qty }}{{ $json.Lokasi_Kalideres }}{{ $json.Menu }}\n\nTolong analisis data tersebut dan berikan laporan ringkas yang mencakup:\n1. Top 3 Lokasi gerobak terlaris minggu ini.\n2. Menu favorit yang paling banyak dibeli.\n3. Saran operasional dan strategi untuk para mitra gerobak minggu depan.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "7257af98-f816-432c-ad61-10b480221755",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        224
+      ],
+      "id": "9a3c9444-08e1-4d77-8a7b-ad79ff13edb3",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "U7cPEXp4Ug3rERAj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Schedule Trigger').item.json.timestamp }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        157.7091854456566
+      ],
+      "id": "2f128d60-af17-4a23-ac9d-d64925d4a715",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ogzvzbCwSOMnrhMUdEXsdrYoZZtjXtuHuK3-kS48yKE",
+          "mode": "list",
+          "cachedResultName": "Rekap_Penjualan_Kopi_Dokar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ogzvzbCwSOMnrhMUdEXsdrYoZZtjXtuHuK3-kS48yKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 156916744,
+          "mode": "list",
+          "cachedResultName": "Laporan_Mingguan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ogzvzbCwSOMnrhMUdEXsdrYoZZtjXtuHuK3-kS48yKE/edit#gid=156916744"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tanggal_Laporan": "$now",
+            "Hasil_Analisis_AI": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tanggal_Laporan",
+              "displayName": "Tanggal_Laporan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Hasil_Analisis_AI",
+              "displayName": "Hasil_Analisis_AI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        0
+      ],
+      "id": "587a60b5-7bf3-4b51-9717-993711d65156",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XwOtRk7TX2Alk9L4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "wetanmas1@gmail.com",
+        "subject": "Hasil Analisis Penjualan Kopi Dokar Minggu lalu",
+        "emailType": "text",
+        "message": "=Berikut ini hasil analisis penjualan Kopi Dokar minggu lalu. {{ $json.Hasil_Analisis_AI }} untuk bahan meeting weekly pekan ini.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "f8ffdda3-60b9-425a-8bb2-04802bb253e2",
+      "name": "Send a message",
+      "webhookId": "c12d3069-02cd-4557-b8f2-83aef92652c1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AAnnuBmtJWNXYAIC",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3ae9ee5f-200d-4741-afea-7df689f3a821",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "80e87bb08e453b0268b6a004795e642b4f65d6aaee5e89e3e2cbcbf6df8cb9bc"
+  },
+  "nodeGroups": [],
+  "id": "Y868ArGj3c79nFWu",
+  "tags": []
+}
